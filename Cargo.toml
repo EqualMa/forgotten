@@ -2,6 +2,21 @@
 name = "forgotten"
 version = "0.1.0" # replace version
 edition = "2018"
+description = "globally and safely persist a value, implemented with ManuallyDrop"
+license = "MIT"
+authors = [
+    "Equal Ma <equalma@outlook.com>",
+]
+homepage = "https://github.com/EqualMa/forgotten"
+repository = "https://github.com/EqualMa/forgotten"
+categories = [
+    "caching",
+    "memory-management",
+]
+keywords = [
+    "forget",
+    "persist",
+]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
