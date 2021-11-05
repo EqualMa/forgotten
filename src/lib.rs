@@ -1,3 +1,7 @@
+mod key;
+
+pub use key::*;
+
 #[cfg(test)]
 mod tests {
     #[test]
