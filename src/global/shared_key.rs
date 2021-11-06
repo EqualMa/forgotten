@@ -5,24 +5,27 @@ use std::{
 };
 
 #[derive(Hash)]
-pub struct ForgottenKey<T: Any>(u32, PhantomData<T>);
+pub struct SharedForgottenKey<T: Any>(usize, PhantomData<T>);
 
-impl<T: Any> Debug for ForgottenKey<T> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_tuple(format!("ForgottenKey<{:?}>", TypeId::of::<T>()).as_str())
-            .field(&self.0)
-            .finish()
+impl<T: Any> SharedForgottenKey<T> {
+    pub(crate) fn new(n: usize) -> Self {
+        Self(n, PhantomData)
     }
 }
 
-impl<T: Any> Drop for ForgottenKey<T> {
-    fn drop(&mut self) {
-        todo!()
+impl<T: Any> SharedForgottenKey<T> {
+    pub fn as_usize(&self) -> &usize {
+        &self.0
+    }
+
+    pub fn into_type_and_usize(self) -> (TypeId, usize) {
+        (TypeId::of::<T>(), self.0)
+    }
+
+    pub unsafe fn from_usize(n: usize) -> Self {
+        Self(n, PhantomData)
     }
 }
-
-#[derive(Hash)]
-pub struct SharedForgottenKey<T: Any>(u32, PhantomData<T>);
 
 impl<T: Any> PartialEq for SharedForgottenKey<T> {
     fn eq(&self, other: &Self) -> bool {
@@ -47,9 +50,6 @@ impl<T: Any> Debug for SharedForgottenKey<T> {
             .finish()
     }
 }
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct AnyForgottenKey(u32);
 
 #[cfg(test)]
 mod tests {
