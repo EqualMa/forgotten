@@ -119,6 +119,17 @@ impl Forgotten {
     }
 
     #[inline]
+    unsafe fn try_get_with_usize<T: Any>(&self, k: &usize) -> Option<Rc<T>> {
+        let v = self.map.get(k);
+
+        if let Some(v) = v {
+            Some(Rc::clone(v).downcast::<T>().unwrap())
+        } else {
+            None
+        }
+    }
+
+    #[inline]
     fn take<T: Any>(&mut self, mut k: ForgottenKey<T>) -> Rc<T> {
         let v = self.map.remove(&k.take_usize()).unwrap();
         let v = ManuallyDrop::into_inner(v);
@@ -129,6 +140,16 @@ impl Forgotten {
     #[inline]
     fn try_take<T: Any>(&mut self, k: &SharedForgottenKey<T>) -> Option<Rc<T>> {
         let v = self.map.remove(k.as_usize());
+        if let Some(v) = v {
+            Some(ManuallyDrop::into_inner(v).downcast::<T>().unwrap())
+        } else {
+            None
+        }
+    }
+
+    #[inline]
+    unsafe fn try_take_with_usize<T: Any>(&mut self, k: &usize) -> Option<Rc<T>> {
+        let v = self.map.remove(k);
         if let Some(v) = v {
             Some(ManuallyDrop::into_inner(v).downcast::<T>().unwrap())
         } else {
@@ -202,6 +223,14 @@ pub fn try_get<T: Any>(k: &SharedForgottenKey<T>) -> Option<Rc<T>> {
 }
 
 #[inline]
+pub unsafe fn try_get_with_usize<T: Any>(k: &usize) -> Option<Rc<T>> {
+    FORGOTTEN.with(|cell| {
+        let fg = cell.borrow();
+        fg.try_get_with_usize::<T>(k)
+    })
+}
+
+#[inline]
 pub fn take<T: Any>(k: ForgottenKey<T>) -> Rc<T> {
     FORGOTTEN.with(|cell| {
         let mut fg = cell.borrow_mut();
@@ -214,6 +243,14 @@ pub fn try_take<T: Any>(k: &SharedForgottenKey<T>) -> Option<Rc<T>> {
     FORGOTTEN.with(|cell| {
         let mut fg = cell.borrow_mut();
         fg.try_take(k)
+    })
+}
+
+#[inline]
+pub unsafe fn try_take_with_usize<T: Any>(k: &usize) -> Option<Rc<T>> {
+    FORGOTTEN.with(|cell| {
+        let mut fg = cell.borrow_mut();
+        fg.try_take_with_usize::<T>(k)
     })
 }
 
