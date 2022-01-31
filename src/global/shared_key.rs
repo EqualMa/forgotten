@@ -5,15 +5,15 @@ use std::{
 };
 
 #[derive(Hash)]
-pub struct SharedForgottenKey<T: ?Sized + Any>(usize, PhantomData<T>);
+pub struct SharedForgottenKey<T: Any>(usize, PhantomData<T>);
 
-impl<T: ?Sized + Any> SharedForgottenKey<T> {
+impl<T: Any> SharedForgottenKey<T> {
     pub(crate) fn new(n: usize) -> Self {
         Self(n, PhantomData)
     }
 }
 
-impl<T: ?Sized + Any> SharedForgottenKey<T> {
+impl<T: Any> SharedForgottenKey<T> {
     pub fn as_usize(&self) -> &usize {
         &self.0
     }
@@ -27,23 +27,23 @@ impl<T: ?Sized + Any> SharedForgottenKey<T> {
     }
 }
 
-impl<T: ?Sized + Any> PartialEq for SharedForgottenKey<T> {
+impl<T: Any> PartialEq for SharedForgottenKey<T> {
     fn eq(&self, other: &Self) -> bool {
         self.0 == other.0
     }
 }
 
-impl<T: ?Sized + Any> Eq for SharedForgottenKey<T> {}
+impl<T: Any> Eq for SharedForgottenKey<T> {}
 
-impl<T: ?Sized + Any> Clone for SharedForgottenKey<T> {
+impl<T: Any> Clone for SharedForgottenKey<T> {
     fn clone(&self) -> Self {
         Self(self.0.clone(), PhantomData)
     }
 }
 
-impl<T: ?Sized + Any> Copy for SharedForgottenKey<T> {}
+impl<T: Any> Copy for SharedForgottenKey<T> {}
 
-impl<T: ?Sized + Any> Debug for SharedForgottenKey<T> {
+impl<T: Any> Debug for SharedForgottenKey<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_tuple(format!("SharedForgottenKey<{:?}>", TypeId::of::<T>()).as_str())
             .field(&self.0)

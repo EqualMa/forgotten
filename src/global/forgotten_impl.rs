@@ -64,8 +64,8 @@ impl Forgotten {
     }
 
     #[inline]
-    fn forget_rc<T: ?Sized + Any>(&mut self, v: Rc<T>) -> ForgottenKey<T> {
-        let k = self.insert(v as Rc<dyn Any>);
+    fn forget_rc<T: Any>(&mut self, v: Rc<T>) -> ForgottenKey<T> {
+        let k = self.insert(v);
         let k = unsafe { ForgottenKey::<T>::new(k) };
 
         k
@@ -84,7 +84,7 @@ impl Forgotten {
     }
 
     #[inline]
-    fn free<T: ?Sized + Any>(&mut self, mut k: ForgottenKey<T>) {
+    fn free<T: Any>(&mut self, mut k: ForgottenKey<T>) {
         #[cfg(not(debug_assertions))]
         unsafe {
             self.free_with_usize(k.take_usize());
@@ -95,12 +95,12 @@ impl Forgotten {
     }
 
     #[inline]
-    fn try_free<T: ?Sized + Any>(&mut self, k: &SharedForgottenKey<T>) -> bool {
+    fn try_free<T: Any>(&mut self, k: &SharedForgottenKey<T>) -> bool {
         unsafe { self.try_free_with_usize(*k.as_usize()) }
     }
 
     #[inline]
-    fn get<T: ?Sized + Any>(&self, k: &ForgottenKey<T>) -> Rc<T> {
+    fn get<T: Any>(&self, k: &ForgottenKey<T>) -> Rc<T> {
         let v = self.map.get(k.as_usize()).unwrap();
         let v = Rc::clone(v);
         let v = v.downcast::<T>().unwrap();
@@ -108,7 +108,7 @@ impl Forgotten {
     }
 
     #[inline]
-    fn try_get<T: ?Sized + Any>(&self, k: &SharedForgottenKey<T>) -> Option<Rc<T>> {
+    fn try_get<T: Any>(&self, k: &SharedForgottenKey<T>) -> Option<Rc<T>> {
         let v = self.map.get(k.as_usize());
 
         if let Some(v) = v {
@@ -119,7 +119,7 @@ impl Forgotten {
     }
 
     #[inline]
-    fn take<T: ?Sized + Any>(&mut self, mut k: ForgottenKey<T>) -> Rc<T> {
+    fn take<T: Any>(&mut self, mut k: ForgottenKey<T>) -> Rc<T> {
         let v = self.map.remove(&k.take_usize()).unwrap();
         let v = ManuallyDrop::into_inner(v);
         let v = v.downcast::<T>().unwrap();
@@ -127,7 +127,7 @@ impl Forgotten {
     }
 
     #[inline]
-    fn try_take<T: ?Sized + Any>(&mut self, k: &SharedForgottenKey<T>) -> Option<Rc<T>> {
+    fn try_take<T: Any>(&mut self, k: &SharedForgottenKey<T>) -> Option<Rc<T>> {
         let v = self.map.remove(k.as_usize());
         if let Some(v) = v {
             Some(ManuallyDrop::into_inner(v).downcast::<T>().unwrap())
@@ -138,7 +138,7 @@ impl Forgotten {
 }
 
 #[inline]
-pub fn forget<T: ?Sized + Any>(v: T) -> ForgottenKey<T> {
+pub fn forget<T: Any>(v: T) -> ForgottenKey<T> {
     FORGOTTEN.with(|cell| {
         let mut fg = cell.borrow_mut();
         fg.forget(v)
@@ -146,7 +146,7 @@ pub fn forget<T: ?Sized + Any>(v: T) -> ForgottenKey<T> {
 }
 
 #[inline]
-pub fn forget_and_get<T: ?Sized + Any>(v: T) -> (ForgottenKey<T>, Rc<T>) {
+pub fn forget_and_get<T: Any>(v: T) -> (ForgottenKey<T>, Rc<T>) {
     FORGOTTEN.with(|cell| {
         let mut fg = cell.borrow_mut();
         fg.forget_and_get(v)
@@ -154,7 +154,7 @@ pub fn forget_and_get<T: ?Sized + Any>(v: T) -> (ForgottenKey<T>, Rc<T>) {
 }
 
 #[inline]
-pub fn forget_rc<T: ?Sized + Any>(v: Rc<T>) -> ForgottenKey<T> {
+pub fn forget_rc<T: Any>(v: Rc<T>) -> ForgottenKey<T> {
     FORGOTTEN.with(|cell| {
         let mut fg = cell.borrow_mut();
         fg.forget_rc(v)
@@ -170,7 +170,7 @@ pub unsafe fn try_free_with_usize(n: usize) -> bool {
 }
 
 #[inline]
-pub fn free<T: ?Sized + Any>(k: ForgottenKey<T>) {
+pub fn free<T: Any>(k: ForgottenKey<T>) {
     FORGOTTEN.with(|cell| {
         let mut fg = cell.borrow_mut();
         fg.free(k)
@@ -178,7 +178,7 @@ pub fn free<T: ?Sized + Any>(k: ForgottenKey<T>) {
 }
 
 #[inline]
-pub fn try_free<T: ?Sized + Any>(k: &SharedForgottenKey<T>) -> bool {
+pub fn try_free<T: Any>(k: &SharedForgottenKey<T>) -> bool {
     FORGOTTEN.with(|cell| {
         let mut fg = cell.borrow_mut();
         fg.try_free(k)
@@ -186,7 +186,7 @@ pub fn try_free<T: ?Sized + Any>(k: &SharedForgottenKey<T>) -> bool {
 }
 
 #[inline]
-pub fn get<T: ?Sized + Any>(k: &ForgottenKey<T>) -> Rc<T> {
+pub fn get<T: Any>(k: &ForgottenKey<T>) -> Rc<T> {
     FORGOTTEN.with(|cell| {
         let fg = cell.borrow();
         fg.get(k)
@@ -194,7 +194,7 @@ pub fn get<T: ?Sized + Any>(k: &ForgottenKey<T>) -> Rc<T> {
 }
 
 #[inline]
-pub fn try_get<T: ?Sized + Any>(k: &SharedForgottenKey<T>) -> Option<Rc<T>> {
+pub fn try_get<T: Any>(k: &SharedForgottenKey<T>) -> Option<Rc<T>> {
     FORGOTTEN.with(|cell| {
         let fg = cell.borrow();
         fg.try_get(k)
@@ -202,7 +202,7 @@ pub fn try_get<T: ?Sized + Any>(k: &SharedForgottenKey<T>) -> Option<Rc<T>> {
 }
 
 #[inline]
-pub fn take<T: ?Sized + Any>(k: ForgottenKey<T>) -> Rc<T> {
+pub fn take<T: Any>(k: ForgottenKey<T>) -> Rc<T> {
     FORGOTTEN.with(|cell| {
         let mut fg = cell.borrow_mut();
         fg.take(k)
@@ -210,7 +210,7 @@ pub fn take<T: ?Sized + Any>(k: ForgottenKey<T>) -> Rc<T> {
 }
 
 #[inline]
-pub fn try_take<T: ?Sized + Any>(k: &SharedForgottenKey<T>) -> Option<Rc<T>> {
+pub fn try_take<T: Any>(k: &SharedForgottenKey<T>) -> Option<Rc<T>> {
     FORGOTTEN.with(|cell| {
         let mut fg = cell.borrow_mut();
         fg.try_take(k)
