@@ -1,6 +1,6 @@
 [package]
 name = "forgotten"
-version = "1.1.0" # replace version
+version = "1.1.1" # replace version
 edition = "2018"
 description = "globally and safely persist a value, implemented with ManuallyDrop"
 license = "MIT"

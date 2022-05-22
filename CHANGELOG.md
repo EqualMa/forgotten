@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/EqualMa/forgotten/compare/v1.1.0...v1.1.1) (2022-05-22)
+
+
+### Bug Fixes
+
+* no longer using ManuallyDrop ([ac40667](https://github.com/EqualMa/forgotten/commit/ac406675391eeaef458b44706deb0159e58a7c20))
+
 # [1.1.0](https://github.com/EqualMa/forgotten/compare/v1.0.0...v1.1.0) (2022-01-31)
 
 
