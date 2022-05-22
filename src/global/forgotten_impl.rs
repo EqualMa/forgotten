@@ -1,4 +1,4 @@
-use std::{any::Any, cell::RefCell, collections::HashMap, mem::ManuallyDrop, rc::Rc};
+use std::{any::Any, cell::RefCell, collections::HashMap, rc::Rc};
 
 use super::{ForgottenKey, SharedForgottenKey};
 
@@ -8,7 +8,7 @@ thread_local! {
 
 struct Forgotten {
     cur: usize,
-    map: HashMap<usize, ManuallyDrop<Rc<dyn Any>>>,
+    map: HashMap<usize, Rc<dyn Any>>,
 }
 
 impl Forgotten {
@@ -33,7 +33,6 @@ impl Forgotten {
     #[inline]
     fn insert(&mut self, v: Rc<dyn Any>) -> usize {
         let k = self.find_available_key();
-        let v = ManuallyDrop::new(v);
 
         #[cfg(not(debug_assertions))]
         self.map.insert(k, v);
@@ -75,12 +74,7 @@ impl Forgotten {
     unsafe fn try_free_with_usize(&mut self, n: usize) -> bool {
         let v = self.map.remove(&n);
 
-        if let Some(mut v) = v {
-            ManuallyDrop::drop(&mut v);
-            true
-        } else {
-            false
-        }
+        v.is_some()
     }
 
     #[inline]
@@ -132,7 +126,6 @@ impl Forgotten {
     #[inline]
     fn take<T: Any>(&mut self, mut k: ForgottenKey<T>) -> Rc<T> {
         let v = self.map.remove(&k.take_usize()).unwrap();
-        let v = ManuallyDrop::into_inner(v);
         let v = v.downcast::<T>().unwrap();
         v
     }
@@ -141,7 +134,7 @@ impl Forgotten {
     fn try_take<T: Any>(&mut self, k: &SharedForgottenKey<T>) -> Option<Rc<T>> {
         let v = self.map.remove(k.as_usize());
         if let Some(v) = v {
-            Some(ManuallyDrop::into_inner(v).downcast::<T>().unwrap())
+            Some(v.downcast::<T>().unwrap())
         } else {
             None
         }
@@ -151,7 +144,7 @@ impl Forgotten {
     unsafe fn try_take_with_usize<T: Any>(&mut self, k: &usize) -> Option<Rc<T>> {
         let v = self.map.remove(k);
         if let Some(v) = v {
-            Some(ManuallyDrop::into_inner(v).downcast::<T>().unwrap())
+            Some(v.downcast::<T>().unwrap())
         } else {
             None
         }
