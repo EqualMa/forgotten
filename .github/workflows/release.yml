@@ -28,7 +28,11 @@ jobs:
             @semantic-release/exec@6.0 \
             @semantic-release/git@10.0
       - name: Test
-        run: cargo build --verbose && cargo test --verbose
+        run: |
+          set -e
+          cargo build --verbose
+          cargo test --verbose
+          cargo test --verbose --features custom
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
