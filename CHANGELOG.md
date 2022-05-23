@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/EqualMa/forgotten/compare/v1.1.1...v1.2.0) (2022-05-23)
+
+
+### Features
+
+* custom Forgotten types ([2fa6a21](https://github.com/EqualMa/forgotten/commit/2fa6a213509d18dd172699978aab4969677ad403))
+
 ## [1.1.1](https://github.com/EqualMa/forgotten/compare/v1.1.0...v1.1.1) (2022-05-22)
 
 
